@@ -9,6 +9,8 @@ from linebot.models import (
     MessageEvent, TextMessage, TextSendMessage,
 )
 import os
+import requests
+from bs4 import BeautifulSoup
 app = Flask(__name__)
 
 #環境変数取得
@@ -52,11 +54,23 @@ def callback():
 
 @handler.add(MessageEvent, message=TextMessage)
 def handle_message(event):
+    response = requests.get('http://blsetup.city.kyoto.jp/blsp/show.php?sid=d21b741ff8826d8b0fb6063e148dcdf3')
+    soup = BeautifulSoup(response.text,'html.parser')
+    imgs = soup.find_all('img', class_='busimg')
+    # imgs_bus = soup.find_all('img', src="./disp_image_sp/bus_img_sp.gif")
+    # imgs = soup.find_all('img', src="./disp_image_sp/bus_now_app_img_sp.gif")
+    text = ''
+    for i, img in enumerate(imgs):
+        if img['src'] != './disp_image_sp/bus_img_sp.gif':
+            text += f'{i}駅前にバスがいます \n'
+    text = event.message.text + '\n' + text
+
     line_bot_api.reply_message(
         event.reply_token,
-        TextSendMessage(text=event.message.text)) #ここでオウム返しのメッセージを返します。
+        TextSendMessage(text=text)) #ここでオウム返しのメッセージを返します。
 
 # ポート番号の設定
+# https://bus-time-information.herokuapp.com/callback
 if __name__ == "__main__":
 #    app.run()
     port = int(os.getenv("PORT", 5000))
