@@ -63,6 +63,8 @@ def handle_message(event):
     for i, img in enumerate(imgs):
         if img['src'] != './disp_image_sp/bus_img_sp.gif':
             text += f'{i}駅前にバスがいます \n'
+        else:
+            text += f'{i}駅前にバスがいません \n'
     text = event.message.text + '\n' + text
 
     line_bot_api.reply_message(
