@@ -1,2 +1,6 @@
 Flask==2.0.2
 line-bot-sdk==2.0.1
+lxml
+BeautifulSoup4
+Requests
+lxml
