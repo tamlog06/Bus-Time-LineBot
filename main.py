@@ -61,7 +61,7 @@ def handle_message(event):
     # imgs = soup.find_all('img', src="./disp_image_sp/bus_now_app_img_sp.gif")
     text = ''
     for i, img in enumerate(imgs):
-        if img['src'] != './disp_image_sp/bus_img_sp.gif':
+        if img['src'] != './disp_image_sp/not_bus_img_sp.gif':
             text += f'{i}駅前にバスがいます \n'
         else:
             text += f'{i}駅前にバスがいません \n'
