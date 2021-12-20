@@ -65,11 +65,19 @@ def handle_message(event):
             text += f'{i}駅前にバスがいます \n'
         else:
             text += f'{i}駅前にバスがいません \n'
-    text = event.message.text + '\n' + text
+    # text = event.message.text + '\n' + text
 
     line_bot_api.reply_message(
         event.reply_token,
         TextSendMessage(text=text)) #ここでオウム返しのメッセージを返します。
+
+def set_URL(url):
+    pass
+
+class Bus:
+    def __init__(self, url):
+        self.url = url
+    
 
 # ポート番号の設定
 # https://bus-time-information.herokuapp.com/callback
