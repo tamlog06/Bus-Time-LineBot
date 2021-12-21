@@ -8,9 +8,11 @@ from linebot.exceptions import (
 from linebot.models import (
     MessageEvent, TextMessage, TextSendMessage,
 )
+
 import os
 import requests
 from bs4 import BeautifulSoup
+import time
 app = Flask(__name__)
 
 #環境変数取得
@@ -37,6 +39,11 @@ def callback():
     try:
         handler.handle(body, signature)
     # 署名検証で失敗した場合、例外を出す。
+    except LineBotApiError as e:
+        print("Got exception from LINE Messaging API: %s\n" % e.message)
+        for m in e.error.details:
+            print("  %s: %s" % (m.property, m.message))
+        print("\n")
     except InvalidSignatureError:
         abort(400)
     # handleの処理を終えればOK
@@ -67,9 +74,12 @@ def handle_message(event):
             text += f'{i}駅前にバスがいません \n'
     # text = event.message.text + '\n' + text
 
-    line_bot_api.reply_message(
-        event.reply_token,
-        TextSendMessage(text=text)) #ここでオウム返しのメッセージを返します。
+    for i in range(5):
+        line_bot_api.reply_message(
+            event.reply_token,
+            TextSendMessage(text=text)) #ここでオウム返しのメッセージを返します。
+        time.sleep(5)
+
 
 def set_URL(url):
     pass
