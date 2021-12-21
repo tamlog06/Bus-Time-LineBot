@@ -6,7 +6,7 @@ from linebot.exceptions import (
     InvalidSignatureError
 )
 from linebot.models import (
-    MessageEvent, TextMessage, TextSendMessage,
+    MessageEvent, TextMessage, TextSendMessage, FollowEvent,
 )
 
 import os
@@ -78,8 +78,8 @@ def handle_message(event):
         # line_bot_api.reply_message(
         #     event.reply_token,
         #     TextSendMessage(text=text)) #ここでオウム返しのメッセージを返します。
-        line_bot_api.reply_message(
-            to,
+        line_bot_api.push_message(
+            event.source.user_id,
             TextSendMessage(text=text)) #ここでオウム返しのメッセージを返します。
 
         time.sleep(5)
@@ -92,6 +92,18 @@ class Bus:
     def __init__(self, url):
         self.url = url
     
+
+class User:
+    def __init__(self, name):
+        self.name = name
+
+# @handler.add(FollowEvent)
+# def handle_follow(event):
+#     app.logger.info("Got Follow event:" + event.source.user_id)
+#     line_bot_api.reply_message(
+#         event.reply_token, TextSendMessage(text='Got follow event'))
+#     user = User(event.source.user_id)
+
 
 # ポート番号の設定
 # https://bus-time-information.herokuapp.com/callback
