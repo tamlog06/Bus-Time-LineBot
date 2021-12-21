@@ -75,9 +75,13 @@ def handle_message(event):
     # text = event.message.text + '\n' + text
 
     for i in range(5):
+        # line_bot_api.reply_message(
+        #     event.reply_token,
+        #     TextSendMessage(text=text)) #ここでオウム返しのメッセージを返します。
         line_bot_api.reply_message(
-            event.reply_token,
+            to,
             TextSendMessage(text=text)) #ここでオウム返しのメッセージを返します。
+
         time.sleep(5)
 
 
