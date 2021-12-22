@@ -36,12 +36,11 @@ class User:
     def add_URL(self, event):
         self.url[event.source.user_id] = event.message.text
     
-    def set_flag(self, event):
-        self.user_flags[event.source.user_id] = True
+    def set_flag(self, event, flag):
+        self.user_flags[event.source.user_id] = flag
 
 users = User()
 
-## 1 ##
 #Webhookからのリクエストをチェックします。
 @app.route("/callback", methods=['POST'])
 def callback():
@@ -67,11 +66,6 @@ def callback():
     # handleの処理を終えればOK
     return 'OK'
 
-## 2 ##
-###############################################
-#LINEのメッセージの取得と返信内容の設定(オウム返し)
-###############################################
-
 #LINEでMessageEvent（普通のメッセージを送信された場合）が起こった場合に、
 #def以下の関数を実行します。
 #reply_messageの第一引数のevent.reply_tokenは、イベントの応答に用いるトークンです。 
@@ -82,17 +76,8 @@ def handle_message(event):
     # response = requests.get('http://blsetup.city.kyoto.jp/blsp/show.php?sid=d21b741ff8826d8b0fb6063e148dcdf3')
 
     if event.message.text == "flag":
-        users.set_flag(event)
-        flag = users.user_flags[event.source.user_id]
-        line_bot_api.push_message(
-                event.source.user_id,
-                TextSendMessage(text=flag))
+        users.set_flag(event, True)
         return
-    else:
-        flag = users.user_flags[event.source.user_id]
-        line_bot_api.push_message(
-                event.source.user_id,
-                TextSendMessage(text=flag))
 
     try:
         users.add_URL(event)
@@ -116,12 +101,9 @@ def handle_message(event):
                 TextSendMessage(text='flagで終了します。'))
             break
 
-        # response = requests.get(event.message.text)
         response = requests.get(users.url[event.source.user_id])
         soup = BeautifulSoup(response.text, 'html.parser')
         imgs = soup.find_all('img', class_='busimg')
-        # imgs_bus = soup.find_all('img', src="./disp_image_sp/bus_img_sp.gif")
-        # imgs = soup.find_all('img', src="./disp_image_sp/bus_now_app_img_sp.gif")
         text = ''
         
         for i in range(len(imgs)):
@@ -137,41 +119,18 @@ def handle_message(event):
             line_bot_api.push_message(
                 event.source.user_id,
                 TextSendMessage(text=text))
-        # else:
-        #     line_bot_api.push_message(
-        #         event.source.user_id,
-        #         TextSendMessage(text='同じ状況'))
         before_text = text
         time.sleep(10)
         t += 10
     
+    if users.user_flags[event.source.user_id]:
+        text = 'flagで終了します。'
+    else:
+        text = '5分経過したので終了します。'
+    users.set_flag(event, False)
     line_bot_api.push_message(
         event.source.user_id,
-        TextSendMessage(text='終了します。'))
-    
-
-
-        #     if i == 2:
-        #         if img['src'] == './disp_image_sp/bus_now_app_img_sp.gif':
-        #             text += f'{3-i}駅前にバスがいます。もうすぐ到着します。'
-        #         else:
-        #             text += f'{3-i}駅前にバスがいません。'
-        #     if img['src'] != './disp_image_sp/not_bus_img_sp.gif':
-        #         text += f'{3-i}駅前にバスがいます。\n'
-        #     else:
-        #         text += f'{3-i}駅前にバスがいません。\n'
-        # # text = event.message.text + '\n' + text
-
-        # # for i in range(5):
-        #     # line_bot_api.reply_message(
-        #     #     event.reply_token,
-        #     #     TextSendMessage(text=text)) #ここでオウム返しのメッセージを返します。
-        # line_bot_api.push_message(
-        #     event.source.user_id,
-        #     TextSendMessage(text=text)) #ここでオウム返しのメッセージを返します。
-
-        # time.sleep(15)
-        # t += 15
+        TextSendMessage(text=text))
 
 @handler.add(FollowEvent)
 def handle_follow(event):
