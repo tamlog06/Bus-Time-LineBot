@@ -181,7 +181,7 @@ def handle_follow(event):
 def check_error(event):
     
     users.add_URL(event)
-    request = requests.get(users.url[event.source.user_id])
+    response = requests.get(users.url[event.source.user_id])
     soup = BeautifulSoup(response.text, 'html.parser')
     imgs = soup.find_all('img', class_='busimg')
     print(imgs)
