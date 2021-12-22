@@ -48,6 +48,7 @@ print()
 t = re.findall('：.*：', title)[0][1:-1]
 print(t)
 print()
+print(len(imgs))
 # imgs_bus = soup.find_all('img', src="./disp_image_sp/bus_img_sp.gif")
 # imgs = soup.find_all('img', src="./disp_image_sp/bus_now_app_img_sp.gif")
 # for i in range(len(imgs)):
