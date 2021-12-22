@@ -15,9 +15,6 @@ from bs4 import BeautifulSoup
 import time
 app = Flask(__name__)
 
-# test
-flag = False
-
 #環境変数取得
 # LINE Developersで設定されているアクセストークンとChannel Secretをを取得し、設定します。
 YOUR_CHANNEL_ACCESS_TOKEN = os.environ["YOUR_CHANNEL_ACCESS_TOKEN"]
@@ -25,6 +22,24 @@ YOUR_CHANNEL_SECRET = os.environ["YOUR_CHANNEL_SECRET"]
 
 line_bot_api = LineBotApi(YOUR_CHANNEL_ACCESS_TOKEN)
 handler = WebhookHandler(YOUR_CHANNEL_SECRET)
+
+class User:
+    def __init__():
+        self.users = {}
+        self.user_flags = {}
+        self.url = {}
+    
+    def add_user(event):
+        self.users[event.source.user_id] = event.source.user_id
+        self.user_flags[event.source.user_id] = False
+    
+    def add_URL(event):
+        self.url[event.source.user_id] = event.message.text
+    
+    def set_flag(event):
+        self.user_flags[event.source.user_id] = True
+
+users = User()
 
 ## 1 ##
 #Webhookからのリクエストをチェックします。
@@ -65,21 +80,23 @@ def callback():
 @handler.add(MessageEvent, message=TextMessage)
 def handle_message(event):
     # response = requests.get('http://blsetup.city.kyoto.jp/blsp/show.php?sid=d21b741ff8826d8b0fb6063e148dcdf3')
-    # flag test
-    global flag
+
     if event.message.text == "flag":
-        flag = True
+        users.set_flag(event)
+        flag = user.user_flags[event.source.user_id]
         line_bot_api.push_message(
                 event.source.user_id,
                 TextSendMessage(text=flag))
+        return
     else:
+        flag = users.user_flags[event.source.user_id]
         line_bot_api.push_message(
                 event.source.user_id,
                 TextSendMessage(text=flag))
 
-    
     try:
-        response = requests.get(event.message.text)
+        users.add_URL(event)
+        request = requests.get(users.url[event.source.user_id])
         line_bot_api.reply_message(
                 event.reply_token,
                 TextSendMessage(text='10秒刻みで一番近いバスの状況を通知します。\n5分経過で終了します。'))
@@ -92,13 +109,15 @@ def handle_message(event):
     start = time.time()
     t = 0
     before_text = ''
-    while t < 60:
-        if flag:
+    while t < 300:
+        if users.user_flags[event.source.user_id]:
             line_bot_api.push_message(
                 event.source.user_id,
                 TextSendMessage(text='flagで終了します。'))
             break
-        response = requests.get(event.message.text)
+
+        # response = requests.get(event.message.text)
+        response = requests.get(users.url[event.source.user_id])
         soup = BeautifulSoup(response.text, 'html.parser')
         imgs = soup.find_all('img', class_='busimg')
         # imgs_bus = soup.find_all('img', src="./disp_image_sp/bus_img_sp.gif")
@@ -127,9 +146,8 @@ def handle_message(event):
     
     line_bot_api.push_message(
         event.source.user_id,
-        TextSendMessage(text='5分経過したので終了します。'))
+        TextSendMessage(text='終了します。'))
     
-    flag = False
 
 
         #     if i == 2:
@@ -154,13 +172,12 @@ def handle_message(event):
         # time.sleep(15)
         # t += 15
 
-
-# @handler.add(FollowEvent)
-# def handle_follow(event):
-#     app.logger.info("Got Follow event:" + event.source.user_id)
-#     line_bot_api.reply_message(
-#         event.reply_token, TextSendMessage(text='Got follow event'))
-#     user = User(event.source.user_id)
+@handler.add(FollowEvent)
+def handle_follow(event):
+    users.add_user(event)
+    app.logger.info("Got Follow event:" + event.source.user_id)
+    line_bot_api.reply_message(
+        event.reply_token, TextSendMessage(text='Got follow event'))
 
 
 # ポート番号の設定
