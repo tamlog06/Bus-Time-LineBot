@@ -97,7 +97,9 @@ def handle_message(event):
                 event.source.user_id,
                 TextSendMessage(text='同じ状況'))
         before_text = text
+        time.sleep(15)
         t += 15
+    
     line_bot_api.push_message(
         event.source.user_id,
         TextSendMessage(text='5分経過したので終了します。'))
