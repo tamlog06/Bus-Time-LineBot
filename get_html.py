@@ -29,6 +29,16 @@ soup = BeautifulSoup(response.text,'html.parser')
 imgs = soup.find_all('img', class_='busimg')
 # imgs_bus = soup.find_all('img', src="./disp_image_sp/bus_img_sp.gif")
 # imgs = soup.find_all('img', src="./disp_image_sp/bus_now_app_img_sp.gif")
+# for i in range(len(imgs)):
+#     print(imgs[i].get('src'))
+#     print(imgs[i].get('src') == './disp_image_sp/not_bus_img_sp.gif')
+
 for i in range(len(imgs)):
-    print(imgs[i].get('src'))
-    print(imgs[i].get('src') == './disp_image_sp/not_bus_img_sp.gif')
+    if imgs[i].get('src') == './disp_image_sp/bus_now_app_img_sp.gif':
+        text = f'{i+1}駅前を過ぎました。もうすぐ到着します。'
+        print(text)
+        break
+    if imgs[i].get('src') == './disp_image_sp/bus_img_sp.gif':
+        text = f'{i+1}駅前をバスが過ぎました。'
+        print(text)
+        break
