@@ -66,8 +66,8 @@ def callback():
 def handle_message(event):
     # response = requests.get('http://blsetup.city.kyoto.jp/blsp/show.php?sid=d21b741ff8826d8b0fb6063e148dcdf3')
     # flag test
+    global flag
     if event.message.text == "flag":
-        global flag
         flag = True
         line_bot_api.push_message(
                 event.source.user_id,
@@ -129,7 +129,6 @@ def handle_message(event):
         event.source.user_id,
         TextSendMessage(text='5分経過したので終了します。'))
     
-    global flag
     flag = False
 
 
