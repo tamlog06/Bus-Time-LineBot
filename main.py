@@ -93,6 +93,11 @@ def handle_message(event):
     t = 0
     before_text = ''
     while t < 60:
+        if flag:
+            line_bot_api.push_message(
+                event.source.user_id,
+                TextSendMessage(text='flagで終了します。'))
+            break
         response = requests.get(event.message.text)
         soup = BeautifulSoup(response.text, 'html.parser')
         imgs = soup.find_all('img', class_='busimg')
@@ -123,6 +128,9 @@ def handle_message(event):
     line_bot_api.push_message(
         event.source.user_id,
         TextSendMessage(text='5分経過したので終了します。'))
+    
+    global flag
+    flag = False
 
 
         #     if i == 2:
