@@ -66,7 +66,7 @@ def handle_message(event):
         response = requests.get(event.message.text)
         line_bot_api.reply_message(
                 event.reply_token,
-                TextSendMessage(text='15秒刻みで現在のバスの状況を通知します。\n5分経過で終了します。'))
+                TextSendMessage(text='20秒刻みで現在のバスの状況を通知します。\n5分経過で終了します。'))
     except:
         line_bot_api.reply_message(
                 event.reply_token,
@@ -75,34 +75,52 @@ def handle_message(event):
     
     start = time.time()
     t = 0
-    while t < 300:
+    before_text = ''
+    while t < 60:
         soup = BeautifulSoup(response.text, 'html.parser')
         imgs = soup.find_all('img', class_='busimg')
         # imgs_bus = soup.find_all('img', src="./disp_image_sp/bus_img_sp.gif")
         # imgs = soup.find_all('img', src="./disp_image_sp/bus_now_app_img_sp.gif")
-        text = ''
-        for i, img in enumerate(imgs):
-            if i == 2:
-                if img['src'] == './disp_image_sp/bus_now_app_img_sp.gif':
-                    text += f'{3-i}駅前にバスがいます。もうすぐ到着します。'
-                else:
-                    text += f'{3-i}駅前にバスがいません。'
-            if img['src'] != './disp_image_sp/not_bus_img_sp.gif':
-                text += f'{3-i}駅前にバスがいます \n'
-            else:
-                text += f'{3-i}駅前にバスがいません \n'
-        # text = event.message.text + '\n' + text
+        for i in range(len(imgs)):
+            if imgs[i].get('src') == './disp_image_sp/bus_now_app_img_sp.gif':
+                text = f'{i+1}駅前を過ぎました。もうすぐ到着します。'
+                break
+            if imgs[i].get('src') == './disp_image_sp/bus_img_sp.gif':
+                text = f'{i+1}駅前をバスが過ぎました。。'
+                break
+        if text != before_text:
+            line_bot_api.push_message(
+                event.source.user_id,
+                TextSendMessage(text=text))
+        else:
+            line_bot_api.push_message(
+                event.source.user_id,
+                TextSendMessage(text='同じ状況'))
+        before_text = text
+        t += 20
 
-        # for i in range(5):
-            # line_bot_api.reply_message(
-            #     event.reply_token,
-            #     TextSendMessage(text=text)) #ここでオウム返しのメッセージを返します。
-        line_bot_api.push_message(
-            event.source.user_id,
-            TextSendMessage(text=text)) #ここでオウム返しのメッセージを返します。
 
-        time.sleep(15)
-        t += 15
+        #     if i == 2:
+        #         if img['src'] == './disp_image_sp/bus_now_app_img_sp.gif':
+        #             text += f'{3-i}駅前にバスがいます。もうすぐ到着します。'
+        #         else:
+        #             text += f'{3-i}駅前にバスがいません。'
+        #     if img['src'] != './disp_image_sp/not_bus_img_sp.gif':
+        #         text += f'{3-i}駅前にバスがいます。\n'
+        #     else:
+        #         text += f'{3-i}駅前にバスがいません。\n'
+        # # text = event.message.text + '\n' + text
+
+        # # for i in range(5):
+        #     # line_bot_api.reply_message(
+        #     #     event.reply_token,
+        #     #     TextSendMessage(text=text)) #ここでオウム返しのメッセージを返します。
+        # line_bot_api.push_message(
+        #     event.source.user_id,
+        #     TextSendMessage(text=text)) #ここでオウム返しのメッセージを返します。
+
+        # time.sleep(15)
+        # t += 15
 
 
 # @handler.add(FollowEvent)

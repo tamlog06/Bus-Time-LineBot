@@ -30,4 +30,4 @@ imgs = soup.find_all('img', class_='busimg')
 # imgs_bus = soup.find_all('img', src="./disp_image_sp/bus_img_sp.gif")
 # imgs = soup.find_all('img', src="./disp_image_sp/bus_now_app_img_sp.gif")
 for img in imgs:
-    print(img['src'])
+    print(img.get('src'))
