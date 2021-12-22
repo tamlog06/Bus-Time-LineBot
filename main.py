@@ -13,6 +13,7 @@ import os
 import requests
 from bs4 import BeautifulSoup
 import time
+import re
 app = Flask(__name__)
 
 #環境変数取得
