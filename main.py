@@ -25,12 +25,10 @@ handler = WebhookHandler(YOUR_CHANNEL_SECRET)
 
 class User:
     def __init__(self):
-        self.users = {}
         self.user_flags = {}
         self.url = {}
     
     def add_user(self, event):
-        self.users[event.source.user_id] = event.source.user_id
         self.user_flags[event.source.user_id] = False
     
     def add_URL(self, event):
@@ -94,11 +92,15 @@ def handle_message(event):
     start = time.time()
     t = 0
     before_text = ''
+    finish_flag = False
     while t < 300:
-        if users.user_flags[event.source.user_id]:
-            line_bot_api.push_message(
-                event.source.user_id,
-                TextSendMessage(text='flagで終了します。'))
+        try:
+            flag = users.user_flags[event.source.user_id]
+        except KeyError:
+            users.add_user(event)
+            flag = users.user_flags[event.source.user_id]
+        
+        if flag:
             break
 
         response = requests.get(users.url[event.source.user_id])
@@ -108,23 +110,33 @@ def handle_message(event):
         
         for i in range(len(imgs)):
             if imgs[i].get('src') == './disp_image_sp/bus_now_app_img_sp.gif':
-                text = f'{i+1}駅前を過ぎました。もうすぐ到着します。'
+                text = '1駅前を過ぎました。もうすぐ到着します。'
                 break
-            if imgs[i].get('src') == './disp_image_sp/bus_img_sp.gif':
+            elif imgs[i].get('src') == './disp_image_sp/bus_img_sp.gif':
                 text = f'{i+1}駅前をバスが過ぎました。'
                 break
         if text == '':
             text = 'バスがまだ近くにいません。'
+            
         if text != before_text:
-            line_bot_api.push_message(
-                event.source.user_id,
-                TextSendMessage(text=text))
+            if before_text == '1駅前を過ぎました。もうすぐ到着します。':
+                line_bot_api.push_message(
+                    event.source.user_id,
+                    TextSendMessage(text='バスが到着しました。'))
+                finish_flag = True
+                break
+            else:
+                line_bot_api.push_message(
+                    event.source.user_id,
+                    TextSendMessage(text=text))
         before_text = text
         time.sleep(10)
         t += 10
     
     if users.user_flags[event.source.user_id]:
-        text = 'flagで終了します。'
+        text = '終了します。'
+    elif finish_flag:
+        text = 'バスが到着したので終了します。'
     else:
         text = '5分経過したので終了します。'
     users.set_flag(event, False)
