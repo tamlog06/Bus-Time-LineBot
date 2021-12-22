@@ -23,6 +23,14 @@ YOUR_CHANNEL_SECRET = os.environ["YOUR_CHANNEL_SECRET"]
 line_bot_api = LineBotApi(YOUR_CHANNEL_ACCESS_TOKEN)
 handler = WebhookHandler(YOUR_CHANNEL_SECRET)
 
+class Text:
+    def __init__(self):
+        self.url_error = 'URLが正しくありません。\nポケロケのサイトから目的のバス停のバス接近情報を表示するURLを入力してください。\n詳しい使い方は〜を参照してください。\nhttp://blsetup.city.kyoto.jp/blsp/'
+        self.start = '一番近いバスの接近状況を通知します。\n10分経過で自動終了します。'
+        self.end = {'flag': '終了します。', 'time': '10分が経過したので終了します。', 'arrive': 'バスが到着したので終了します。'}
+        self.bus = {'1': '1駅前をバスが通過しました。\nもうすぐ到着します。', '2': '2駅前をバスが通過しました。', '3': '3駅前をバスが通過しました。', 'no': '近くにまだバスがいません。', 'arrive': 'バスが到着しました。'}
+        self.follow = '友達追加ありがとう！\nポケロケのサイトから目的のバス停のバス接近情報を表示するURLを入力してもらうと、バス接近情報を通知します！\n詳しい使い方は〜を参照してね！\nhttp://blsetup.city.kyoto.jp/blsp/'
+
 class User:
     def __init__(self):
         self.user_flags = {}
@@ -38,6 +46,7 @@ class User:
         self.user_flags[event.source.user_id] = flag
 
 users = User()
+txt = Text()
 
 #Webhookからのリクエストをチェックします。
 @app.route("/callback", methods=['POST'])
@@ -76,17 +85,24 @@ def handle_message(event):
     if event.message.text == "flag":
         users.set_flag(event, True)
         return
+    # elif not event.message.text.startswith("http://blsetup.city.kyoto.jp/blsp/show.php?sid="):
+    #     line_bot_api.reply_message(
+    #             event.reply_token,
+    #             TextSendMessage(text='URLが間違っています。'))
 
-    try:
-        users.add_URL(event)
-        request = requests.get(users.url[event.source.user_id])
-        line_bot_api.reply_message(
-                event.reply_token,
-                TextSendMessage(text='10秒刻みで一番近いバスの状況を通知します。\n5分経過で終了します。'))
-    except:
-        line_bot_api.reply_message(
-                event.reply_token,
-                TextSendMessage(text='URLが間違っています。'))
+    # try:
+    #     users.add_URL(event)
+    #     request = requests.get(users.url[event.source.user_id])
+    #     line_bot_api.reply_message(
+    #             event.reply_token,
+    #             TextSendMessage(text='一番近いバスの接近状況を通知します。\n5分経過で終了します。'))
+    # except:
+    #     line_bot_api.reply_message(
+    #             event.reply_token,
+    #             TextSendMessage(text='URLが間違っています。'))
+    #     return
+
+    if check_error(event):
         return
     
     start = time.time()
@@ -110,19 +126,26 @@ def handle_message(event):
         
         for i in range(len(imgs)):
             if imgs[i].get('src') == './disp_image_sp/bus_now_app_img_sp.gif':
-                text = '1駅前を過ぎました。もうすぐ到着します。'
+                # text = '1駅前を過ぎました。もうすぐ到着します。'
+                text = txt.bus[str(1)]
                 break
             elif imgs[i].get('src') == './disp_image_sp/bus_img_sp.gif':
-                text = f'{i+1}駅前をバスが過ぎました。'
+                # text = f'{i+1}駅前をバスが過ぎました。'
+                text = txt.bus[str(i+1)]
                 break
         if text == '':
-            text = 'バスがまだ近くにいません。'
+            # text = 'バスがまだ近くにいません。'
+            text = txt.bus[no]
             
         if text != before_text:
-            if before_text == '1駅前を過ぎました。もうすぐ到着します。':
+            # if before_text == '1駅前を過ぎました。もうすぐ到着します。':
+            if before_text == txt.bus[1]:
+                # line_bot_api.push_message(
+                #     event.source.user_id,
+                #     TextSendMessage(text='バスが到着しました。'))
                 line_bot_api.push_message(
                     event.source.user_id,
-                    TextSendMessage(text='バスが到着しました。'))
+                    TextSendMessage(text=txt.bus['arrive']))
                 finish_flag = True
                 break
             else:
@@ -134,11 +157,15 @@ def handle_message(event):
         t += 10
     
     if users.user_flags[event.source.user_id]:
-        text = '終了します。'
+        # text = '終了します。'
+        text = txt.end['flag']
     elif finish_flag:
-        text = 'バスが到着したので終了します。'
+        # text = 'バスが到着したので終了します。'
+        text = txt.end['arrive']
     else:
-        text = '5分経過したので終了します。'
+        # text = '5分経過したので終了します。'
+        text = txt.end['time']
+    
     users.set_flag(event, False)
     line_bot_api.push_message(
         event.source.user_id,
@@ -150,6 +177,35 @@ def handle_follow(event):
     app.logger.info("Got Follow event:" + event.source.user_id)
     line_bot_api.reply_message(
         event.reply_token, TextSendMessage(text='Got follow event'))
+
+def check_error(event):
+    try:
+        users.add_URL(event)
+        request = requests.get(users.url[event.source.user_id])
+        soup = BeautifulSoup(response.text, 'html.parser')
+        imgs = soup.find_all('img', class_='busimg')
+        title = soup.find('title').text
+        title = re.findall('：.*：', title)[0][1:-1]
+        if len(imgs) == 3:
+            text = f'{title}\n{txt.start}'
+            # line_bot_api.reply_message(
+            #         event.reply_token,
+            #         TextSendMessage(text=f'{title}\n一番近いバスの接近状況を通知します。\n5分経過で終了します。'))
+            line_bot_api.reply_message(
+                    event.reply_token,
+                    TextSendMessage(text=text))
+            return True
+        else:
+            text = txt.url_error
+            line_bot_api.reply_message(
+                    event.reply_token,
+                    TextSendMessage(text=text))
+    except:
+        text = txt.url_error
+        line_bot_api.reply_message(
+                event.reply_token,
+                TextSendMessage(text=text))
+        return False
 
 
 # ポート番号の設定
