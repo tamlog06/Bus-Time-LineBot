@@ -123,11 +123,6 @@ def handle_message(event):
         # imgs_bus = soup.find_all('img', src="./disp_image_sp/bus_img_sp.gif")
         # imgs = soup.find_all('img', src="./disp_image_sp/bus_now_app_img_sp.gif")
         text = ''
-        for i in range(len(imgs)):
-            tx = imgs[i].get('src')
-            line_bot_api.push_message(
-                    event.source.user_id,
-                    TextSendMessage(text=f'{tx}'))
         
         for i in range(len(imgs)):
             if imgs[i].get('src') == './disp_image_sp/bus_now_app_img_sp.gif':
