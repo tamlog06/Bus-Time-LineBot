@@ -123,9 +123,10 @@ def handle_message(event):
         # imgs_bus = soup.find_all('img', src="./disp_image_sp/bus_img_sp.gif")
         # imgs = soup.find_all('img', src="./disp_image_sp/bus_now_app_img_sp.gif")
         text = ''
-        line_bot_api.push_message(
-                event.source.user_id,
-                TextSendMessage(text=imgs))
+        for i in range(len(imgs)):
+            line_bot_api.push_message(
+                    event.source.user_id,
+                    TextSendMessage(text=imgs[i].get('src')))
         for i in range(len(imgs)):
             if imgs[i].get('src') == './disp_image_sp/bus_now_app_img_sp.gif':
                 text = f'{i+1}駅前を過ぎました。もうすぐ到着します。'
