@@ -69,12 +69,12 @@ def handle_message(event):
     if event.message.text == "flag":
         global flag
         flag = True
-        line_bot_api.reply_message(
-                event.reply_token,
+        line_bot_api.push_message(
+                event.source.user_id,
                 TextSendMessage(text=flag))
     else:
-        line_bot_api.reply_message(
-                event.reply_token,
+        line_bot_api.push_message(
+                event.source.user_id,
                 TextSendMessage(text=flag))
 
     
