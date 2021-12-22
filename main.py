@@ -83,7 +83,7 @@ def handle_message(event):
 
     if event.message.text == "flag":
         users.set_flag(event)
-        flag = user.user_flags[event.source.user_id]
+        flag = users.user_flags[event.source.user_id]
         line_bot_api.push_message(
                 event.source.user_id,
                 TextSendMessage(text=flag))
