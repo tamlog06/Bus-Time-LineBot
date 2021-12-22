@@ -66,7 +66,7 @@ def handle_message(event):
         response = requests.get(event.message.text)
         line_bot_api.reply_message(
                 event.reply_token,
-                TextSendMessage(text='20秒刻みで一番近いバスの状況を通知します。\n5分経過で終了します。'))
+                TextSendMessage(text='15秒刻みで一番近いバスの状況を通知します。\n5分経過で終了します。'))
     except:
         line_bot_api.reply_message(
                 event.reply_token,
@@ -81,6 +81,7 @@ def handle_message(event):
         imgs = soup.find_all('img', class_='busimg')
         # imgs_bus = soup.find_all('img', src="./disp_image_sp/bus_img_sp.gif")
         # imgs = soup.find_all('img', src="./disp_image_sp/bus_now_app_img_sp.gif")
+        text = ''
         for i in range(len(imgs)):
             if imgs[i].get('src') == './disp_image_sp/bus_now_app_img_sp.gif':
                 text = f'{i+1}駅前を過ぎました。もうすぐ到着します。'
@@ -88,6 +89,8 @@ def handle_message(event):
             if imgs[i].get('src') == './disp_image_sp/bus_img_sp.gif':
                 text = f'{i+1}駅前をバスが過ぎました。'
                 break
+        if text == '':
+            text = 'バスがまだ近くにいません。'
         if text != before_text:
             line_bot_api.push_message(
                 event.source.user_id,
