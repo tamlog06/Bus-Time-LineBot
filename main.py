@@ -24,19 +24,19 @@ line_bot_api = LineBotApi(YOUR_CHANNEL_ACCESS_TOKEN)
 handler = WebhookHandler(YOUR_CHANNEL_SECRET)
 
 class User:
-    def __init__():
+    def __init__(self):
         self.users = {}
         self.user_flags = {}
         self.url = {}
     
-    def add_user(event):
+    def add_user(self, event):
         self.users[event.source.user_id] = event.source.user_id
         self.user_flags[event.source.user_id] = False
     
-    def add_URL(event):
+    def add_URL(self, event):
         self.url[event.source.user_id] = event.message.text
     
-    def set_flag(event):
+    def set_flag(self, event):
         self.user_flags[event.source.user_id] = True
 
 users = User()
