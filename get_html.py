@@ -29,5 +29,6 @@ soup = BeautifulSoup(response.text,'html.parser')
 imgs = soup.find_all('img', class_='busimg')
 # imgs_bus = soup.find_all('img', src="./disp_image_sp/bus_img_sp.gif")
 # imgs = soup.find_all('img', src="./disp_image_sp/bus_now_app_img_sp.gif")
-for img in imgs:
-    print(img.get('src'))
+for i in range(len(imgs)):
+    print(imgs[i].get('src'))
+    print(imgs[i].get('src') == './disp_image_sp/not_bus_img_sp.gif')
