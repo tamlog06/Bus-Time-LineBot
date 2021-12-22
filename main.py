@@ -66,7 +66,7 @@ def handle_message(event):
         response = requests.get(event.message.text)
         line_bot_api.reply_message(
                 event.reply_token,
-                TextSendMessage(text='20秒刻みで現在のバスの状況を通知します。\n5分経過で終了します。'))
+                TextSendMessage(text='20秒刻みで一番近いバスの状況を通知します。\n5分経過で終了します。'))
     except:
         line_bot_api.reply_message(
                 event.reply_token,
@@ -76,7 +76,7 @@ def handle_message(event):
     start = time.time()
     t = 0
     before_text = ''
-    while t < 60:
+    while t < 300:
         soup = BeautifulSoup(response.text, 'html.parser')
         imgs = soup.find_all('img', class_='busimg')
         # imgs_bus = soup.find_all('img', src="./disp_image_sp/bus_img_sp.gif")
@@ -86,7 +86,7 @@ def handle_message(event):
                 text = f'{i+1}駅前を過ぎました。もうすぐ到着します。'
                 break
             if imgs[i].get('src') == './disp_image_sp/bus_img_sp.gif':
-                text = f'{i+1}駅前をバスが過ぎました。。'
+                text = f'{i+1}駅前をバスが過ぎました。'
                 break
         if text != before_text:
             line_bot_api.push_message(
@@ -97,7 +97,10 @@ def handle_message(event):
                 event.source.user_id,
                 TextSendMessage(text='同じ状況'))
         before_text = text
-        t += 20
+        t += 15
+    line_bot_api.push_message(
+        event.source.user_id,
+        TextSendMessage(text='5分経過したので終了します。'))
 
 
         #     if i == 2:
