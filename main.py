@@ -61,41 +61,49 @@ def callback():
 
 @handler.add(MessageEvent, message=TextMessage)
 def handle_message(event):
-    response = requests.get('http://blsetup.city.kyoto.jp/blsp/show.php?sid=d21b741ff8826d8b0fb6063e148dcdf3')
-    soup = BeautifulSoup(response.text,'html.parser')
-    imgs = soup.find_all('img', class_='busimg')
-    # imgs_bus = soup.find_all('img', src="./disp_image_sp/bus_img_sp.gif")
-    # imgs = soup.find_all('img', src="./disp_image_sp/bus_now_app_img_sp.gif")
-    text = ''
-    for i, img in enumerate(imgs):
-        if img['src'] != './disp_image_sp/not_bus_img_sp.gif':
-            text += f'{i}駅前にバスがいます \n'
-        else:
-            text += f'{i}駅前にバスがいません \n'
-    # text = event.message.text + '\n' + text
+    # response = requests.get('http://blsetup.city.kyoto.jp/blsp/show.php?sid=d21b741ff8826d8b0fb6063e148dcdf3')
+    try:
+        response = requests.get(event.message.text)
+        line_bot_api.reply_message(
+                event.reply_token,
+                TextSendMessage(text='15秒刻みで現在のバスの状況を通知します。\n5分経過で終了します。'))
+    except:
+        line_bot_api.reply_message(
+                event.reply_token,
+                TextSendMessage(text='URLが間違っています。'))
+        return
+    
+    start = time.time()
+    t = 0
+    while t < 300:
+        soup = BeautifulSoup(response.text, 'html.parser')
+        imgs = soup.find_all('img', class_='busimg')
+        # imgs_bus = soup.find_all('img', src="./disp_image_sp/bus_img_sp.gif")
+        # imgs = soup.find_all('img', src="./disp_image_sp/bus_now_app_img_sp.gif")
+        text = ''
+        for i, img in enumerate(imgs):
+            if i == 2:
+                if img['src'] == './disp_image_sp/bus_now_app_img_sp.gif':
+                    text += f'{3-i}駅前にバスがいます。もうすぐ到着します。'
+                else:
+                    text += f'{3-i}駅前にバスがいません。'
+            if img['src'] != './disp_image_sp/not_bus_img_sp.gif':
+                text += f'{3-i}駅前にバスがいます \n'
+            else:
+                text += f'{3-i}駅前にバスがいません \n'
+        # text = event.message.text + '\n' + text
 
-    for i in range(5):
-        # line_bot_api.reply_message(
-        #     event.reply_token,
-        #     TextSendMessage(text=text)) #ここでオウム返しのメッセージを返します。
+        # for i in range(5):
+            # line_bot_api.reply_message(
+            #     event.reply_token,
+            #     TextSendMessage(text=text)) #ここでオウム返しのメッセージを返します。
         line_bot_api.push_message(
             event.source.user_id,
             TextSendMessage(text=text)) #ここでオウム返しのメッセージを返します。
 
-        time.sleep(5)
+        time.sleep(15)
+        t += 15
 
-
-def set_URL(url):
-    pass
-
-class Bus:
-    def __init__(self, url):
-        self.url = url
-    
-
-class User:
-    def __init__(self, name):
-        self.name = name
 
 # @handler.add(FollowEvent)
 # def handle_follow(event):
