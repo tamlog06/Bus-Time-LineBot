@@ -84,6 +84,7 @@ def handle_message(event):
     # ユーザーが終了メッセージを送った場合はフラグを立てて通知を終了する
     print(1)
     if event.message.text == "終了" or "中止" or "中断":
+        print(event.message.text)
         users.set_quit_flag(event, True)
         return
 
