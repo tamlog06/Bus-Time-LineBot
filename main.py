@@ -109,6 +109,7 @@ def handle_message(event):
         return
     
     users.set_run_flag(event, True)
+    user.set_quit_flag(event, False)
     response = requests.get(users.url[event.source.user_id])
     soup = BeautifulSoup(response.text, 'html.parser')
     title = soup.find('title')
