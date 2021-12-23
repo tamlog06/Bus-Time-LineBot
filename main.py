@@ -188,7 +188,7 @@ def check_error(event):
     if title == None or title.text == [] or not len(imgs)==3:
         line_bot_api.reply_message(
             event.reply_token,
-            TextSendMessage(text=text.url_error))
+            TextSendMessage(text=txt.url_error))
         return False
     title = re.findall('：.*：', title.text)[0][1:-1]
     text = f'{title}\n{txt.start}'
