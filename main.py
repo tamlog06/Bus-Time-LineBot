@@ -85,11 +85,17 @@ def handle_message(event):
     if event.message.text == "quit_flag":
         users.set_quit_flag(event, True)
         return
+
+    # 起動中であれば何もしない
+    try:
+        run_flag = users.run_flags[event.source.user_id]
+    except KeyError:
+        users.add_user(event)
+        run_flag = users.run_flags[event.source.user_id]
     
-    # 起動中であれば何も反応しない
-    if users.run_flags[event.source.user_id]:
+    if run_flag:
         return
-    
+
     # 正しいURLかどうかチェック
     if not check_error(event):
         return
