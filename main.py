@@ -191,8 +191,7 @@ def handle_follow(event):
 
 def check_error(event):
     try:
-        users.add_URL(event)
-        response = requests.get(users.url[event.source.user_id])
+        response = requests.get(event.message.text)
         # ステータスコードが200以外ならエラー
         response.raise_for_status()
         soup = BeautifulSoup(response.text, 'html.parser')
@@ -214,6 +213,8 @@ def check_error(event):
         line_bot_api.reply_message(
                 event.reply_token,
                 TextSendMessage(text=text))
+        
+        users.add_URL(event)
         return True
 
     except requests.exceptions.MissingSchema or requests.exceptions.ConnectionError or requests.exceptions.HTTPError:
