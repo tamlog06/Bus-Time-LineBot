@@ -135,7 +135,7 @@ def handle_message(event):
                 break
         if text == '':
             # text = 'バスがまだ近くにいません。'
-            text = txt.bus[no]
+            text = txt.bus['no']
             
         if text != before_text:
             # if before_text == '1駅前を過ぎました。もうすぐ到着します。':
