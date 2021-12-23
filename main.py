@@ -29,23 +29,27 @@ class Text:
         self.error = {'url': 'URLが正しくありません。\nポケロケのサイトから目的のバス停のバス接近情報を表示するURLを入力してください。\n詳しい使い方は〜を参照してください。\nhttp://blsetup.city.kyoto.jp/blsp/',\
             'imgs': '表示するバスが複数選択されてしまっています。\n表示するバスは1つだけ選択してください。'}
         self.start = '一番近いバスの接近状況を通知します。\n15分経過で自動終了します。'
-        self.end = {'flag': '終了します。', 'time': '15分が経過したので終了します。', 'arrive': 'バスが到着したので終了します。'}
+        self.end = {'quit_flag': '終了します。', 'time': '15分が経過したので終了します。', 'arrive': 'バスが到着したので終了します。'}
         self.bus = {'1': '1駅前をバスが通過しました。\nもうすぐ到着します。', '2': '2駅前をバスが通過しました。', '3': '3駅前をバスが通過しました。', 'no': '近くにまだバスがいません。', 'arrive': 'バスが到着しました。'}
         self.follow = '友達追加ありがとうございます！\nポケロケのサイトから目的のバス停のバス接近情報を表示するURLを入力してもらうと、バス接近情報を通知します。\n詳しい使い方は〜を参照してください。\nhttp://blsetup.city.kyoto.jp/blsp/'
 
 class User:
     def __init__(self):
-        self.user_flags = {}
+        self.quit_flags = {}
+        self.run_flags = {}
         self.url = {}
     
     def add_user(self, event):
-        self.user_flags[event.source.user_id] = False
+        self.quit_flags[event.source.user_id] = False
     
     def add_URL(self, event):
         self.url[event.source.user_id] = event.message.text
     
-    def set_flag(self, event, flag):
-        self.user_flags[event.source.user_id] = flag
+    def set_quit_flag(self, event, flag):
+        self.quit_flags[event.source.user_id] = flag
+
+    def set_run_flag(self, event, flag):
+        self.run_flags[event.source.user_id] = flag
 
 users = User()
 txt = Text()
@@ -77,14 +81,19 @@ def callback():
 @handler.add(MessageEvent, message=TextMessage)
 def handle_message(event):
     # ユーザーが終了メッセージを送った場合はフラグを立てて通知を終了する
-    if event.message.text == "flag":
-        users.set_flag(event, True)
+    if event.message.text == "quit_flag":
+        users.set_quit_flag(event, True)
+        return
+    
+    # 起動中であれば何も反応しない
+    if users.run_flags[event.source.user_id]:
         return
     
     # 正しいURLかどうかチェック
     if not check_error(event):
         return
     
+    users.set_run_flag(event, True)
     t = 0
     before_text = ''
     # 時間制限で終了したかどうかのフラグ
@@ -92,12 +101,12 @@ def handle_message(event):
     while t < 900:
         # ユーザークラスから、各ユーザーのフラグを取得
         try:
-            flag = users.user_flags[event.source.user_id]
+            quit_flag = users.quit_flags[event.source.user_id]
         except KeyError:
             users.add_user(event)
-            flag = users.user_flags[event.source.user_id]
+            quit_flag = users.quit_flags[event.source.user_id]
         
-        if flag:
+        if quit_flag:
             break
 
         # busimgクラスのimgを取得
@@ -143,8 +152,8 @@ def handle_message(event):
         t += 10
     
     # ユーザーがフラグを立てて終了した時
-    if users.user_flags[event.source.user_id]:
-        text = txt.end['flag']
+    if users.quit_flags[event.source.user_id]:
+        text = txt.end['quit_flag']
     # バスが到着して終了した時
     elif finish_flag:
         text = txt.end['arrive']
@@ -152,7 +161,8 @@ def handle_message(event):
     else:
         text = txt.end['time']
     
-    users.set_flag(event, False)
+    users.set_quit_flag(event, False)
+    users.set_run_flag(event, False)
     line_bot_api.push_message(
         event.source.user_id,
         TextSendMessage(text=text))
