@@ -109,7 +109,7 @@ def handle_message(event):
             # now_appが1駅前、bus_imgが2、3駅前のときのもの
             if imgs[i].get('src') == './disp_image_sp/bus_now_app_img_sp.gif' or './disp_image_sp/bus_img_sp.gif':
                 bus_num += 1
-                if not text == '':
+                if text == '':
                     text = txt.bus[str(i+1)]
         
         if t == 0:
