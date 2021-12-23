@@ -179,26 +179,31 @@ def handle_follow(event):
         event.reply_token, TextSendMessage(text='Got follow event'))
 
 def check_error(event):
-    
-    users.add_URL(event)
-    response = requests.get(users.url[event.source.user_id])
-    soup = BeautifulSoup(response.text, 'html.parser')
-    imgs = soup.find_all('img', class_='busimg')
-    title = soup.find('title')
-    if title == None or title.text == [] or not len(imgs)==3:
+    try:
+        users.add_URL(event)
+        response = requests.get(users.url[event.source.user_id])
+        soup = BeautifulSoup(response.text, 'html.parser')
+        imgs = soup.find_all('img', class_='busimg')
+        title = soup.find('title')
+        if title == None or title.text == [] or not len(imgs)==3:
+            line_bot_api.reply_message(
+                event.reply_token,
+                TextSendMessage(text=txt.url_error))
+            return False
+        title = re.findall('：.*：', title.text)[0][1:-1]
+        text = f'{title}\n{txt.start}'
+        # line_bot_api.reply_message(
+        #         event.reply_token,
+        #         TextSendMessage(text=f'{title}\n一番近いバスの接近状況を通知します。\n5分経過で終了します。'))
         line_bot_api.reply_message(
-            event.reply_token,
-            TextSendMessage(text=txt.url_error))
+                event.reply_token,
+                TextSendMessage(text=text))
+        return True
+    except requests.exceptions.MissingSchema:
+        line_bot_api.reply_message(
+                event.reply_token,
+                TextSendMessage(text=f'{txt.url_error}url違う'))
         return False
-    title = re.findall('：.*：', title.text)[0][1:-1]
-    text = f'{title}\n{txt.start}'
-    # line_bot_api.reply_message(
-    #         event.reply_token,
-    #         TextSendMessage(text=f'{title}\n一番近いバスの接近状況を通知します。\n5分経過で終了します。'))
-    line_bot_api.reply_message(
-            event.reply_token,
-            TextSendMessage(text=text))
-    return True
     # else:
     #     text = txt.url_error
     #     line_bot_api.reply_message(
