@@ -109,6 +109,14 @@ def handle_message(event):
         return
     
     users.set_run_flag(event, True)
+    response = requests.get(users.url[event.source.user_id])
+    soup = BeautifulSoup(response.text, 'html.parser')
+    title = soup.find('title')
+    title = re.findall('：.*：', title.text)[0][1:-1]
+    text = f'{title}\n{txt.start}'
+    line_bot_api.reply_message(
+            event.reply_token,
+            TextSendMessage(text=text))
     t = 0
     before_text = ''
     # 時間制限で終了したかどうかのフラグ
@@ -207,12 +215,6 @@ def check_error(event):
                 event.reply_token,
                 TextSendMessage(text=txt.error['url']))
             return False
-
-        title = re.findall('：.*：', title.text)[0][1:-1]
-        text = f'{title}\n{txt.start}'
-        line_bot_api.reply_message(
-                event.reply_token,
-                TextSendMessage(text=text))
         
         users.add_URL(event)
         return True
