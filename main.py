@@ -181,6 +181,11 @@ def check_error(event):
                 event.reply_token,
                 TextSendMessage(text=f'{txt.url_error} url違うよ'))
         return False
+    except requests.exceptions.ConnectionError:
+        line_bot_api.reply_message(
+                event.reply_token,
+                TextSendMessage(text=f'{txt.url_error} url違うよ2'))
+        return False
 
 # ポート番号の設定
 # https://bus-time-information.herokuapp.com/callback
