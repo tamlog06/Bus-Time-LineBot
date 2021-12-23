@@ -26,7 +26,8 @@ handler = WebhookHandler(YOUR_CHANNEL_SECRET)
 
 class Text:
     def __init__(self):
-        self.url_error = 'URLが正しくありません。\nポケロケのサイトから目的のバス停のバス接近情報を表示するURLを入力してください。\n詳しい使い方は〜を参照してください。\nhttp://blsetup.city.kyoto.jp/blsp/'
+        self.error = {'url': 'URLが正しくありません。\nポケロケのサイトから目的のバス停のバス接近情報を表示するURLを入力してください。\n詳しい使い方は〜を参照してください。\nhttp://blsetup.city.kyoto.jp/blsp/',\
+            'imgs': '表示するバスが複数選択されてしまっています。\n表示するバスは1つだけ選択してください。'}
         self.start = '一番近いバスの接近状況を通知します。\n15分経過で自動終了します。'
         self.end = {'flag': '終了します。', 'time': '15分が経過したので終了します。', 'arrive': 'バスが到着したので終了します。'}
         self.bus = {'1': '1駅前をバスが通過しました。\nもうすぐ到着します。', '2': '2駅前をバスが通過しました。', '3': '3駅前をバスが通過しました。', 'no': '近くにまだバスがいません。', 'arrive': 'バスが到着しました。'}
@@ -172,10 +173,15 @@ def check_error(event):
         soup = BeautifulSoup(response.text, 'html.parser')
         imgs = soup.find_all('img', class_='busimg')
         title = soup.find('title')
-        if title == None or title.text == [] or not len(imgs)==3:
+        if len(imgs) > 3:
+            line_bot_api.push_message(
+                event.source.user_id,
+                TextSendMessage(text=txt.error['imgs']))
+            return False
+        if title == None or title.text == [] or len(imgs) < 3:
             line_bot_api.reply_message(
                 event.reply_token,
-                TextSendMessage(text=txt.url_error))
+                TextSendMessage(text=txt.error['url']))
             return False
 
         title = re.findall('：.*：', title.text)[0][1:-1]
@@ -188,7 +194,7 @@ def check_error(event):
     except requests.exceptions.MissingSchema or requests.exceptions.ConnectionError or requests.exceptions.HTTPError:
         line_bot_api.reply_message(
                 event.reply_token,
-                TextSendMessage(text=txt.url_error))
+                TextSendMessage(text=txt.error['url']))
         return False
 
 # ポート番号の設定
