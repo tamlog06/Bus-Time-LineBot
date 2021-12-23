@@ -30,7 +30,7 @@ class Text:
         self.start = '一番近いバスの接近状況を通知します。\n15分経過で自動終了します。'
         self.end = {'flag': '終了します。', 'time': '15分が経過したので終了します。', 'arrive': 'バスが到着したので終了します。'}
         self.bus = {'1': '1駅前をバスが通過しました。\nもうすぐ到着します。', '2': '2駅前をバスが通過しました。', '3': '3駅前をバスが通過しました。', 'no': '近くにまだバスがいません。', 'arrive': 'バスが到着しました。'}
-        self.follow = '友達追加ありがとう！\nポケロケのサイトから目的のバス停のバス接近情報を表示するURLを入力してもらうと、バス接近情報を通知します！\n詳しい使い方は〜を参照してね！\nhttp://blsetup.city.kyoto.jp/blsp/'
+        self.follow = '友達追加ありがとうございます！\nポケロケのサイトから目的のバス停のバス接近情報を表示するURLを入力してもらうと、バス接近情報を通知します。\n詳しい使い方は〜を参照してください。\nhttp://blsetup.city.kyoto.jp/blsp/'
 
 class User:
     def __init__(self):
@@ -161,7 +161,7 @@ def handle_follow(event):
     users.add_user(event)
     app.logger.info("Got Follow event:" + event.source.user_id)
     line_bot_api.reply_message(
-        event.reply_token, TextSendMessage(text='Got follow event'))
+        event.reply_token, TextSendMessage(text=txt.follow))
 
 def check_error(event):
     try:
