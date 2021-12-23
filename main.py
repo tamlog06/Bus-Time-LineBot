@@ -82,39 +82,31 @@ def callback():
 @handler.add(MessageEvent, message=TextMessage)
 def handle_message(event):
     # ユーザーが終了メッセージを送った場合はフラグを立てて通知を終了する
-    print(1)
-    if event.message.text == "終了" or "中止" or "中断":
-        print(event.message.text)
+    if event.message.text == "終了":
         users.set_quit_flag(event, True)
         return
 
     # 起動中であれば何もしない
-    print(2)
     try:
         run_flag = users.run_flags[event.source.user_id]
     except KeyError:
         users.add_user(event)
         run_flag = users.run_flags[event.source.user_id]
     
-    print(3)
     if run_flag:
         return
     
-    print(4)
     # 既にURLが設定されている場合は、そのURLを使用する
-    if event.message.text == '開始' or '再開':
+    if event.message.text == '開始':
         # 開始メッセージが送られてきたのにURLが設定されていない場合
         if not event.source.user_id in users.url:
             line_bot_api.reply_message(
                 event.reply_token, 
                 TextSendMessage(text=txt.error['no_url']))
-            print(5)
             return
     # 正しいURLかどうかチェック
     elif not check_error(event):
-        print(6)
         return
-    print(7)
     
     users.set_run_flag(event, True)
     t = 0
