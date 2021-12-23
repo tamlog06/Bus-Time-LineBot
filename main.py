@@ -103,10 +103,9 @@ def handle_message(event):
     #             TextSendMessage(text='URLが間違っています。'))
     #     return
 
-    if check_error(event):
+    if not check_error(event):
         return
     
-    start = time.time()
     t = 0
     before_text = ''
     finish_flag = False
@@ -185,25 +184,27 @@ def check_error(event):
     response = requests.get(users.url[event.source.user_id])
     soup = BeautifulSoup(response.text, 'html.parser')
     imgs = soup.find_all('img', class_='busimg')
-    print(imgs)
-    title = soup.find('title').text
-    print(title)
-    title = re.findall('：.*：', title)[0][1:-1]
-    print(title)
-    if len(imgs) == 3:
-        text = f'{title}\n{txt.start}'
-        # line_bot_api.reply_message(
-        #         event.reply_token,
-        #         TextSendMessage(text=f'{title}\n一番近いバスの接近状況を通知します。\n5分経過で終了します。'))
+    title = soup.find('title')
+    if title == None or title.text == [] or not len(imgs)==3:
         line_bot_api.reply_message(
-                event.reply_token,
-                TextSendMessage(text=text))
-        return True
-    else:
-        text = txt.url_error
-        line_bot_api.reply_message(
-                event.reply_token,
-                TextSendMessage(text='imgが３じゃない'))
+            event.reply_token,
+            TextSendMessage(text=text.url_error))
+        return False
+    title = re.findall('：.*：', title.text)[0][1:-1]
+    text = f'{title}\n{txt.start}'
+    # line_bot_api.reply_message(
+    #         event.reply_token,
+    #         TextSendMessage(text=f'{title}\n一番近いバスの接近状況を通知します。\n5分経過で終了します。'))
+    line_bot_api.reply_message(
+            event.reply_token,
+            TextSendMessage(text=text))
+    return True
+    # else:
+    #     text = txt.url_error
+    #     line_bot_api.reply_message(
+    #             event.reply_token,
+    #             TextSendMessage(text='imgが３じゃない'))
+    #     return False
     # except:
     #     text = txt.url_error
     #     line_bot_api.reply_message(
