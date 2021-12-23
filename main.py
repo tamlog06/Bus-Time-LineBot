@@ -104,29 +104,35 @@ def handle_message(event):
         soup = BeautifulSoup(response.text, 'html.parser')
         imgs = soup.find_all('img', class_='busimg')
         text = ''
-        
+        bus_num = 0
         for i in range(len(imgs)):
             # now_appが1駅前、bus_imgが2、3駅前のときのもの
             if imgs[i].get('src') == './disp_image_sp/bus_now_app_img_sp.gif' or './disp_image_sp/bus_img_sp.gif':
-                text = txt.bus[str(i+1)]
-                break
+                bus_num += 1
+                if not text == '':
+                    text = txt.bus[str(i+1)]
+        
+        if t == 0:
+            bus_num_before = bus_num
+        
         # textが更新されなければ、バスが近くにいない
         if text == '':
             text = txt.bus['no']
         
+        # 前の通知が1駅前のもので、現在のバスの数が前のものより少なければ、バスが到着したと判断して終了
+        if before_text == txt.bus[str(1)] and bus_num < bus_num_before:
+            line_bot_api.push_message(
+                event.source.user_id,
+                TextSendMessage(text=txt.bus['arrive']))
+            finish_flag = True
+            break
+
         # 前のサイクルで通知した内容と状況が変われば通知する
         if text != before_text:
-            # 前の通知が1駅前のもので、現在の通知がそれと異なるのなら、バスが到着したと判定して終了
-            if before_text == txt.bus[str(1)]:
-                line_bot_api.push_message(
-                    event.source.user_id,
-                    TextSendMessage(text=txt.bus['arrive']))
-                finish_flag = True
-                break
-            else:
-                line_bot_api.push_message(
-                    event.source.user_id,
-                    TextSendMessage(text=text))
+            line_bot_api.push_message(
+                event.source.user_id,
+                TextSendMessage(text=text))
+        
         before_text = text
         time.sleep(10)
         t += 10
@@ -167,7 +173,7 @@ def check_error(event):
                 event.reply_token,
                 TextSendMessage(text=txt.url_error))
             return False
-            
+
         title = re.findall('：.*：', title.text)[0][1:-1]
         text = f'{title}\n{txt.start}'
         line_bot_api.reply_message(
