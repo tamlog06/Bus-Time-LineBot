@@ -86,22 +86,6 @@ def handle_message(event):
     if event.message.text == "flag":
         users.set_flag(event, True)
         return
-    # elif not event.message.text.startswith("http://blsetup.city.kyoto.jp/blsp/show.php?sid="):
-    #     line_bot_api.reply_message(
-    #             event.reply_token,
-    #             TextSendMessage(text='URLが間違っています。'))
-
-    # try:
-    #     users.add_URL(event)
-    #     request = requests.get(users.url[event.source.user_id])
-    #     line_bot_api.reply_message(
-    #             event.reply_token,
-    #             TextSendMessage(text='一番近いバスの接近状況を通知します。\n5分経過で終了します。'))
-    # except:
-    #     line_bot_api.reply_message(
-    #             event.reply_token,
-    #             TextSendMessage(text='URLが間違っています。'))
-    #     return
 
     if not check_error(event):
         return
@@ -126,23 +110,16 @@ def handle_message(event):
         
         for i in range(len(imgs)):
             if imgs[i].get('src') == './disp_image_sp/bus_now_app_img_sp.gif':
-                # text = '1駅前を過ぎました。もうすぐ到着します。'
                 text = txt.bus[str(1)]
                 break
             elif imgs[i].get('src') == './disp_image_sp/bus_img_sp.gif':
-                # text = f'{i+1}駅前をバスが過ぎました。'
                 text = txt.bus[str(i+1)]
                 break
         if text == '':
-            # text = 'バスがまだ近くにいません。'
             text = txt.bus['no']
             
         if text != before_text:
-            # if before_text == '1駅前を過ぎました。もうすぐ到着します。':
             if before_text == txt.bus[str(1)]:
-                # line_bot_api.push_message(
-                #     event.source.user_id,
-                #     TextSendMessage(text='バスが到着しました。'))
                 line_bot_api.push_message(
                     event.source.user_id,
                     TextSendMessage(text=txt.bus['arrive']))
@@ -157,13 +134,10 @@ def handle_message(event):
         t += 10
     
     if users.user_flags[event.source.user_id]:
-        # text = '終了します。'
         text = txt.end['flag']
     elif finish_flag:
-        # text = 'バスが到着したので終了します。'
         text = txt.end['arrive']
     else:
-        # text = '5分経過したので終了します。'
         text = txt.end['time']
     
     users.set_flag(event, False)
@@ -182,6 +156,7 @@ def check_error(event):
     try:
         users.add_URL(event)
         response = requests.get(users.url[event.source.user_id])
+        response.raise_for_status()
         soup = BeautifulSoup(response.text, 'html.parser')
         imgs = soup.find_all('img', class_='busimg')
         title = soup.find('title')
@@ -192,9 +167,6 @@ def check_error(event):
             return False
         title = re.findall('：.*：', title.text)[0][1:-1]
         text = f'{title}\n{txt.start}'
-        # line_bot_api.reply_message(
-        #         event.reply_token,
-        #         TextSendMessage(text=f'{title}\n一番近いバスの接近状況を通知します。\n5分経過で終了します。'))
         line_bot_api.reply_message(
                 event.reply_token,
                 TextSendMessage(text=text))
@@ -202,21 +174,13 @@ def check_error(event):
     except requests.exceptions.MissingSchema:
         line_bot_api.reply_message(
                 event.reply_token,
-                TextSendMessage(text=f'{txt.url_error}url違う'))
+                TextSendMessage(text=f'{txt.url_error}'))
         return False
-    # else:
-    #     text = txt.url_error
-    #     line_bot_api.reply_message(
-    #             event.reply_token,
-    #             TextSendMessage(text='imgが３じゃない'))
-    #     return False
-    # except:
-    #     text = txt.url_error
-    #     line_bot_api.reply_message(
-    #             event.reply_token,
-    #             TextSendMessage(text=text))
-    #     return False
-
+    except requests.exceptions.HTTPError:
+        line_bot_api.reply_message(
+                event.reply_token,
+                TextSendMessage(text=f'{txt.url_error} url違うよ'))
+        return False
 
 # ポート番号の設定
 # https://bus-time-information.herokuapp.com/callback
