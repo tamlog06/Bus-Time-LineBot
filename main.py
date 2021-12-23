@@ -171,8 +171,8 @@ def handle_message(event):
                 TextSendMessage(text=text))
         
         before_text = text
-        time.sleep(5)
-        t += 5
+        time.sleep(10)
+        t += 10
     
     # ユーザーがフラグを立てて終了した時
     if users.quit_flags[event.source.user_id]:
