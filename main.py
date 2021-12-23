@@ -27,7 +27,7 @@ handler = WebhookHandler(YOUR_CHANNEL_SECRET)
 class Text:
     def __init__(self):
         self.error = {'url': 'URLが正しくありません。\nポケロケのサイトから目的のバス停のバス接近情報を表示するURLを入力してください。\n詳しい使い方は〜を参照してください。\nhttp://blsetup.city.kyoto.jp/blsp/',\
-            'imgs': '表示するバスが複数選択されてしまっています。\n表示するバスは1つだけ選択してください。'}
+            'imgs': '表示するバスが複数選択されてしまっています。\n表示するバスは1つだけ選択してください。', 'no_url': 'URLが設定されていません。\nポケロケのサイトから目的のバス停のバス接近情報を表示するURLを入力してください。\n詳しい使い方は〜を参照してください。\nhttp://blsetup.city.kyoto.jp/blsp/'}
         self.start = '一番近いバスの接近状況を通知します。\n15分経過で自動終了します。'
         self.end = {'quit_flag': '終了します。', 'time': '15分が経過したので終了します。', 'arrive': 'バスが到着したので終了します。'}
         self.bus = {'1': '1駅前をバスが通過しました。\nもうすぐ到着します。', '2': '2駅前をバスが通過しました。', '3': '3駅前をバスが通過しました。', 'no': '近くにまだバスがいません。', 'arrive': 'バスが到着しました。'}
@@ -82,7 +82,7 @@ def callback():
 @handler.add(MessageEvent, message=TextMessage)
 def handle_message(event):
     # ユーザーが終了メッセージを送った場合はフラグを立てて通知を終了する
-    if event.message.text == "quit_flag":
+    if event.message.text == "終了" or "中止" or "中断":
         users.set_quit_flag(event, True)
         return
 
@@ -95,9 +95,17 @@ def handle_message(event):
     
     if run_flag:
         return
-
+    
+    # 既にURLが設定されている場合は、そのURLを使用する
+    if event.message.text == '開始' or '再開':
+        # 開始メッセージが送られてきたのにURLが設定されていない場合
+        if not event.source.user_id in users.url:
+            line_bot_api.reply_message(
+                event.reply_token, 
+                TextSendMessage(text=txt.error['no_url']))
+            return
     # 正しいURLかどうかチェック
-    if not check_error(event):
+    elif not check_error(event):
         return
     
     users.set_run_flag(event, True)
