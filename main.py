@@ -143,7 +143,7 @@ def handle_message(event):
             if imgs[i].get('src') == './disp_image_sp/bus_now_app_img_sp.gif':
                 bus_num += 1
                 if text == '':
-                    text = txt.bus[str(1)]
+                    text = txt.bus['1']
             elif  imgs[i].get('src') ==  './disp_image_sp/bus_img_sp.gif':
                 bus_num += 1
                 if text == '':
@@ -157,7 +157,7 @@ def handle_message(event):
             text = txt.bus['no']
         
         # 前の通知が1駅前のもので、現在のバスの数が前のものより少なければ、バスが到着したと判断して終了
-        if before_text == txt.bus[str(1)] and bus_num < bus_num_before:
+        if before_text == txt.bus['1'] and (bus_num < bus_num_before or text != txt.bus['1']):
             line_bot_api.push_message(
                 event.source.user_id,
                 TextSendMessage(text=txt.bus['arrive']))
