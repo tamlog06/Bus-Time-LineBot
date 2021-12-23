@@ -41,6 +41,7 @@ class User:
     
     def add_user(self, event):
         self.quit_flags[event.source.user_id] = False
+        self.run_flags[event.source.user_id] = False
     
     def add_URL(self, event):
         self.url[event.source.user_id] = event.message.text
