@@ -172,7 +172,7 @@ def handle_message(event):
         
         before_text = text
         time.sleep(5)
-        t += 
+        t += 5
     
     # ユーザーがフラグを立てて終了した時
     if users.quit_flags[event.source.user_id]:
