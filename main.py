@@ -265,7 +265,7 @@ def candidate_names(name):
     candidate_names = []
     for key in station.keys():
         if name in key:
-            candidate_names.append(name)
+            candidate_names.append(key)
         
         if len(candidate_names) >= 5:
             return candidate_names
