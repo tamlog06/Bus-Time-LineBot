@@ -14,6 +14,7 @@ import requests
 from bs4 import BeautifulSoup
 import time
 import re
+import pickle
 app = Flask(__name__)
 
 #環境変数取得
