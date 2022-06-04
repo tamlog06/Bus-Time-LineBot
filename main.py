@@ -122,7 +122,7 @@ def handle_message(event):
             )
         else:
             # バス停名が見つからない場合は、近そうなものを探す（上限5個）
-            candidates = candidate_names(name)
+            candidates = candidate_names(text)
             if len(candidates) == 0:
                 line_bot_api.reply_message(
                     event.reply_token,
