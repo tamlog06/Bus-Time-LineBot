@@ -264,7 +264,7 @@ def check_error(event):
 def candidate_names(name):
     candidate_names = []
     for key in station.keys():
-        if name in station[key]:
+        if name in key:
             candidate_names.append(name)
         
         if len(candidate_names) >= 5:
