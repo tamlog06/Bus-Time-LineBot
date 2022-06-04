@@ -128,6 +128,13 @@ def handle_message(event):
                     event.reply_token,
                     TextSendMessage(text='そんなバス停ないよ')
                 )
+            elif len(candidates) == 1:
+                station_id = station[candidates[0]]
+                url = f'http://blsetup.city.kyoto.jp/blsp/step3.php?id={station_id}'
+                line_bot_api.reply_message(
+                    event.reply_token,
+                    TextSendMessage(text=url)
+                )
             else:
                 text = f'どれ？\n{candidates}'
                 line_bot_api.reply_message(
