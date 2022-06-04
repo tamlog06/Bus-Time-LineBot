@@ -136,6 +136,7 @@ def handle_message(event):
                     TextSendMessage(text=url)
                 )
             else:
+                candidates = '\n'.join(candidates)
                 text = f'どれ？\n{candidates}'
                 line_bot_api.reply_message(
                     event.reply_token,
