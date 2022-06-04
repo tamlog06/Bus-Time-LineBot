@@ -55,6 +55,10 @@ class User:
 users = User()
 txt = Text()
 
+# 各バス停のバス停番号を辞書方で保存したもの
+with open('station.pkl', 'rb') as f:
+    station = pickle.load(f)
+
 #Webhookからのリクエストをチェック
 @app.route("/callback", methods=['POST'])
 def callback():
@@ -104,6 +108,25 @@ def handle_message(event):
                 event.reply_token, 
                 TextSendMessage(text=txt.error['no_url']))
             return
+    
+    # ユーザーがバス停の名前を送ってきた場合は、対応するURLを送信する
+    elif not event.message.text.startswith('http'):
+        text = event.message.text
+        if text in station.keys():
+            station_id = station[text]
+            url = f'http://blsetup.city.kyoto.jp/blsp/step3.php?id={station_id}'
+            line_bot_api.reply_message(
+                event.reply_token,
+                TextSendMessage(text=url)
+            )
+        else:
+            line_bot_api.reply_message(
+                event.reply_token,
+                TextSendMessage(text='bag')
+            )
+        return
+
+
     # 正しいURLかどうかチェック
     elif not check_error(event):
         return
@@ -201,8 +224,10 @@ def handle_follow(event):
 def check_error(event):
     try:
         response = requests.get(event.message.text)
+
         # ステータスコードが200以外ならエラー
         response.raise_for_status()
+
         soup = BeautifulSoup(response.text, 'html.parser')
         imgs = soup.find_all('img', class_='busimg')
         title = soup.find('title')
@@ -214,7 +239,7 @@ def check_error(event):
         if title == None or title.text == [] or len(imgs) < 3:
             line_bot_api.reply_message(
                 event.reply_token,
-                TextSendMessage(text=txt.error['url']))
+                TextSendMessage(ext=txt.error['url']))
             return False
         
         users.add_URL(event)
