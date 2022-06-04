@@ -121,10 +121,19 @@ def handle_message(event):
                 TextSendMessage(text=url)
             )
         else:
-            line_bot_api.reply_message(
-                event.reply_token,
-                TextSendMessage(text='bag')
-            )
+            # バス停名が見つからない場合は、近そうなものを探す（上限5個）
+            candidates = candidate_names(name)
+            if len(candidates) == 0:
+                line_bot_api.reply_message(
+                    event.reply_token,
+                    TextSendMessage(text='そんなバス停ないよ')
+                )
+            else:
+                text = f'どれ？\n{candidates}'
+                line_bot_api.reply_message(
+                    event.reply_token,
+                    TextSendMessage(text=text)
+                )
         return
 
 
@@ -251,6 +260,18 @@ def check_error(event):
                 event.reply_token,
                 TextSendMessage(text=txt.error['url']))
         return False
+
+def candidate_names(name):
+    candidate_names = []
+    for key in station.keys():
+        if name in station[key]:
+            candidate_names.append(name)
+        
+        if len(candidate_names) >= 5:
+            return candidate_names
+    
+    return candidate_names
+
 
 # ポート番号の設定
 if __name__ == "__main__":
