@@ -31,7 +31,7 @@ class Text:
             'imgs': '表示するバスが複数選択されてしまっています。\n表示するバスは1つだけ選択してください。', 'no_url': 'URLが設定されていません。\nポケロケのサイトから目的のバス停のバス接近情報を表示するURLを入力してください。\n詳しい使い方は〜を参照してください。\nhttp://blsetup.city.kyoto.jp/blsp/'}
         self.start = '一番近いバスの接近状況を通知します。\n15分経過で自動終了します。'
         self.end = {'quit_flag': '終了します。', 'time': '15分が経過したので終了します。', 'arrive': 'バスが到着したので終了します。'}
-        self.bus = {1: '1駅前をバスが通過しました。\nもうすぐ到着します。', 2: '2駅前をバスが通過しました。', 3: '3駅前をバスが通過しました。', 4: '近くにまだバスがいません。', 'arrive': 'バスが到着しました。'}
+        self.bus = {0: '1駅前をバスが通過しました。\nもうすぐ到着します。', 1: '2駅前をバスが通過しました。', 2: '3駅前をバスが通過しました。', 3: '近くにまだバスがいません。', 'arrive': 'バスが到着しました。'}
         self.follow = '友達追加ありがとうございます！\nポケロケのサイトから目的のバス停のバス接近情報を表示するURLを入力してもらうと、バス接近情報を通知します。\n詳しい使い方は〜を参照してください。\nhttp://blsetup.city.kyoto.jp/blsp/'
 
 class User:
@@ -181,7 +181,7 @@ def handle_message(event):
         text = ''
 
         bus_num = 0
-        text_id = 4
+        text_id = 3
 
         for i, img in enumerate(imgs):
             if img.get('src') == "./disp_image_sp/bus_now_app_img_sp.gif" or img.get('src') == './disp_image_sp/bus_img_sp.gif':
