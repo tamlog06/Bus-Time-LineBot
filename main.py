@@ -31,7 +31,7 @@ class Text:
             'imgs': '表示するバスが複数選択されてしまっています。\n表示するバスは1つだけ選択してください。', 'no_url': 'URLが設定されていません。\nポケロケのサイトから目的のバス停のバス接近情報を表示するURLを入力してください。\n詳しい使い方は〜を参照してください。\nhttp://blsetup.city.kyoto.jp/blsp/'}
         self.start = '一番近いバスの接近状況を通知します。\n15分経過で自動終了します。'
         self.end = {'quit_flag': '終了します。', 'time': '15分が経過したので終了します。', 'arrive': 'バスが到着したので終了します。'}
-        self.bus = {'1': '1駅前をバスが通過しました。\nもうすぐ到着します。', '2': '2駅前をバスが通過しました。', '3': '3駅前をバスが通過しました。', 'no': '近くにまだバスがいません。', 'arrive': 'バスが到着しました。'}
+        self.bus = {1: '1駅前をバスが通過しました。\nもうすぐ到着します。', 2: '2駅前をバスが通過しました。', 3: '3駅前をバスが通過しました。', 4: '近くにまだバスがいません。', 'arrive': 'バスが到着しました。'}
         self.follow = '友達追加ありがとうございます！\nポケロケのサイトから目的のバス停のバス接近情報を表示するURLを入力してもらうと、バス接近情報を通知します。\n詳しい使い方は〜を参照してください。\nhttp://blsetup.city.kyoto.jp/blsp/'
 
 class User:
@@ -163,7 +163,7 @@ def handle_message(event):
     before_text = ''
     # 時間制限で終了したかどうかのフラグ
     finish_flag = False
-    while t < 900:
+    while t < 1000:
         # ユーザークラスから、各ユーザーのフラグを取得
         try:
             quit_flag = users.quit_flags[event.source.user_id]
@@ -179,27 +179,38 @@ def handle_message(event):
         soup = BeautifulSoup(response.text, 'html.parser')
         imgs = soup.find_all('img', class_='busimg')
         text = ''
+
         bus_num = 0
-        for i in range(len(imgs)):
-            # now_appが1駅前、bus_imgが2、3駅前のときのもの
-            if imgs[i].get('src') == './disp_image_sp/bus_now_app_img_sp.gif':
+        text_id = 4
+
+        for i, img in enumerate(imgs):
+            if img.get('src') == "./disp_image_sp/bus_now_app_img_sp.gif" or img.get('src') == './disp_image_sp/bus_img_sp.gif':
+                text_id = min(text_id, i%3)
                 bus_num += 1
-                if text == '':
-                    text = txt.bus['1']
-            elif  imgs[i].get('src') ==  './disp_image_sp/bus_img_sp.gif':
-                bus_num += 1
-                if text == '':
-                    text = txt.bus[str(i+1)]
+        
+        text = txt.bus[text_id]
+
+
+        # for i in range(len(imgs)):
+        #     # now_appが1駅前、bus_imgが2、3駅前のときのもの
+        #     if imgs[i].get('src') == './disp_image_sp/bus_now_app_img_sp.gif':
+        #         bus_num += 1
+        #         if text == '':
+        #             text = txt.bus['1']
+        #     elif  imgs[i].get('src') ==  './disp_image_sp/bus_img_sp.gif':
+        #         bus_num += 1
+        #         if text == '':
+        #             text = txt.bus[str(i+1)]
         
         if t == 0:
             bus_num_before = bus_num
         
-        # textが更新されなければ、バスが近くにいない
-        if text == '':
-            text = txt.bus['no']
+        # # textが更新されなければ、バスが近くにいない
+        # if text == '':
+        #     text = txt.bus['no']
         
         # 前の通知が1駅前のもので、現在のバスの数が前のものより少なければ、バスが到着したと判断して終了
-        if before_text == txt.bus['1'] and (bus_num < bus_num_before or text != txt.bus['1']):
+        if before_text == txt.bus[1] and (bus_num < bus_num_before or text != txt.bus[1]):
             line_bot_api.push_message(
                 event.source.user_id,
                 TextSendMessage(text=txt.bus['arrive']))
@@ -249,11 +260,12 @@ def check_error(event):
         soup = BeautifulSoup(response.text, 'html.parser')
         imgs = soup.find_all('img', class_='busimg')
         title = soup.find('title')
-        if len(imgs) > 3:
-            line_bot_api.push_message(
-                event.source.user_id,
-                TextSendMessage(text=txt.error['imgs']))
-            return False
+        # 複数でも可能にする
+        # if len(imgs) > 3:
+        #     line_bot_api.push_message(
+        #         event.source.user_id,
+        #         TextSendMessage(text=txt.error['imgs']))
+        #     return False
         if title == None or title.text == [] or len(imgs) < 3:
             line_bot_api.reply_message(
                 event.reply_token,
