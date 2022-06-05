@@ -186,8 +186,7 @@ def handle_message(event):
         # busimgクラスのimgを取得
         response = requests.get(users.url[event.source.user_id])
         soup = BeautifulSoup(response.text, 'html.parser')
-        imgs = soup.find_all('img', class_='busimg')
-        text = ''
+        imgs = soup.find_all('img', class_=['bls-keito-num-img', 'busimg'])
 
         bus_num = 0
         text_id = 4
