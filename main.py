@@ -168,11 +168,16 @@ def handle_message(event):
     line_bot_api.reply_message(
             event.reply_token,
             TextSendMessage(text=text))
-    t = 0
+    
+    start_time = time.time()
+    now = start_time
     before_text = ''
+    bus_num_before = -1
     # 時間制限で終了したかどうかのフラグ
     finish_flag = False
-    while t < 1000:
+
+    # 10分間
+    while now - start_time < 600:
         # ユーザークラスから、各ユーザーのフラグを取得
         try:
             quit_flag = users.quit_flags[event.source.user_id]
@@ -228,13 +233,6 @@ def handle_message(event):
         #         if text == '':
         #             text = txt.bus[str(i+1)]
         
-        if t == 0:
-            bus_num_before = bus_num
-        
-        # # textが更新されなければ、バスが近くにいない
-        # if text == '':
-        #     text = txt.bus['no']
-        
         # 前の通知が1駅前のもので、現在のバスの数が前のものより少なければ、バスが到着したと判断して終了
         if before_text == txt.bus[1] and (bus_num < bus_num_before or text != txt.bus[1]):
             line_bot_api.push_message(
@@ -250,8 +248,10 @@ def handle_message(event):
                 TextSendMessage(text=text))
         
         before_text = text
+        bus_num_before = bus_num
         time.sleep(10)
-        t += 10
+        # t += 10
+        now = time.time()
     
     # ユーザーがフラグを立てて終了した時
     if users.quit_flags[event.source.user_id]:
@@ -267,7 +267,8 @@ def handle_message(event):
     users.set_run_flag(event, False)
     line_bot_api.push_message(
         event.source.user_id,
-        TextSendMessage(text=text))
+        TextSendMessage(text=text)
+    )
 
 @handler.add(FollowEvent)
 def handle_follow(event):
