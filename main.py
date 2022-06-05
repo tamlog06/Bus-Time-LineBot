@@ -174,6 +174,7 @@ def handle_message(event):
     before_text = ''
     before_id = -1
     bus_num_before = -1
+    before_keitoList = []
     # 時間制限で終了したかどうかのフラグ
     finish_flag = False
 
@@ -235,7 +236,7 @@ def handle_message(event):
         #             text = txt.bus[str(i+1)]
         
         # 前の通知が1駅前のもので、現在のバスの数が前のものより少なければ、バスが到着したと判断して終了
-        if before_id == 1 and (bus_num < bus_num_before or text_id != 1):
+        if before_id == 1 and (bus_num < bus_num_before or text_id != 1 or keitoList != before_keitoList):
             line_bot_api.push_message(
                 event.source.user_id,
                 TextSendMessage(text=txt.bus['arrive']))
@@ -251,6 +252,7 @@ def handle_message(event):
         before_text = text
         before_text_id = text_id
         bus_num_before = bus_num
+        before_keitoList = keitoList
         time.sleep(10)
         # t += 10
         now = time.time()
