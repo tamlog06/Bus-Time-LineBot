@@ -159,7 +159,7 @@ def handle_message(event):
             return
         else:
             candidates = '\n'.join(candidates)
-            text = f'どれ？\n{candidates}'
+            text = f'この中にある？\n{candidates}'
             line_bot_api.reply_message(
                 event.reply_token,
                 TextSendMessage(text=text)
