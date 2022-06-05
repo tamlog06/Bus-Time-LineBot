@@ -29,8 +29,8 @@ class Text:
     def __init__(self):
         self.error = {'url': 'URLが正しくありません。\nポケロケのサイトから目的のバス停のバス接近情報を表示するURLを入力してください。\n詳しい使い方は〜を参照してください。\nhttp://blsetup.city.kyoto.jp/blsp/',\
             'imgs': '表示するバスが複数選択されてしまっています。\n表示するバスは1つだけ選択してください。', 'no_url': 'URLが設定されていません。\nポケロケのサイトから目的のバス停のバス接近情報を表示するURLを入力してください。\n詳しい使い方は〜を参照してください。\nhttp://blsetup.city.kyoto.jp/blsp/'}
-        self.start = '一番近いバスの接近状況を通知します。\n15分経過で自動終了します。'
-        self.end = {'quit_flag': '終了します。', 'time': '15分が経過したので終了します。', 'arrive': 'バスが到着したので終了します。'}
+        self.start = '一番近いバスの接近状況を通知します。\n10分経過で自動終了します。'
+        self.end = {'quit_flag': '終了します。', 'time': '10分が経過したので終了します。', 'arrive': 'バスが到着したので終了します。'}
         self.bus = {1: '1駅前を以下のバスが通過しました。\nもうすぐ到着します。', 2: '2駅前を以下のバスが通過しました。', 3: '3駅前を以下のバスが通過しました。', 4: '近くにまだバスがいません。', 'arrive': 'バスが到着しました。'}
         self.follow = '友達追加ありがとうございます！\nポケロケのサイトから目的のバス停のバス接近情報を表示するURLを入力してもらうと、バス接近情報を通知します。\n詳しい使い方は〜を参照してください。\nhttp://blsetup.city.kyoto.jp/blsp/'
     
@@ -247,7 +247,7 @@ def handle_message(event):
                 event.source.user_id,
                 TextSendMessage(text=text))
         
-        before_text = text
+        before_text = txt.bus[text_id]
         bus_num_before = bus_num
         time.sleep(10)
         # t += 10
