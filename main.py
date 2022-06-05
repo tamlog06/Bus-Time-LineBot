@@ -172,6 +172,7 @@ def handle_message(event):
     start_time = time.time()
     now = start_time
     before_text = ''
+    before_id = -1
     bus_num_before = -1
     # 時間制限で終了したかどうかのフラグ
     finish_flag = False
