@@ -234,7 +234,7 @@ def handle_message(event):
         #             text = txt.bus[str(i+1)]
         
         # 前の通知が1駅前のもので、現在のバスの数が前のものより少なければ、バスが到着したと判断して終了
-        if before_text == txt.bus[1] and (bus_num < bus_num_before or text != txt.bus[1]):
+        if before_text == txt.bus[1] and (bus_num < bus_num_before or text_id != 1):
             line_bot_api.push_message(
                 event.source.user_id,
                 TextSendMessage(text=txt.bus['arrive']))
