@@ -172,7 +172,7 @@ def handle_message(event):
     start_time = time.time()
     now = start_time
     before_text = ''
-    before_id = -1
+    before_text_id = -1
     bus_num_before = -1
     before_keitoList = []
     # 時間制限で終了したかどうかのフラグ
@@ -236,7 +236,7 @@ def handle_message(event):
         #             text = txt.bus[str(i+1)]
         
         # 前の通知が1駅前のもので、現在のバスの数が前のものより少なければ、バスが到着したと判断して終了
-        if before_id == 1 and (bus_num < bus_num_before or text_id != 1 or len(keitoList) < len(before_keitoList)):
+        if before_text_id == 1 and (bus_num < bus_num_before or text_id != 1 or len(keitoList) < len(before_keitoList)):
             line_bot_api.push_message(
                 event.source.user_id,
                 TextSendMessage(text=txt.bus['arrive']))
