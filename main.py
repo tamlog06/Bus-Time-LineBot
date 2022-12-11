@@ -16,19 +16,15 @@ import time
 import re
 import pickle
 
-import openai
-
 app = Flask(__name__)
 
 #環境変数取得
 # LINE Developersで設定されているアクセストークンとChannel Secretを取得し、設定します。
 YOUR_CHANNEL_ACCESS_TOKEN = os.environ["YOUR_CHANNEL_ACCESS_TOKEN"]
 YOUR_CHANNEL_SECRET = os.environ["YOUR_CHANNEL_SECRET"]
-OPENAPI_API_KEY = os.environ["OPENAPI_API_KEY"]
 
 line_bot_api = LineBotApi(YOUR_CHANNEL_ACCESS_TOKEN)
 handler = WebhookHandler(YOUR_CHANNEL_SECRET)
-openai.api_key = OPENAPI_API_KEY
 
 class Text:
     def __init__(self):
@@ -47,10 +43,6 @@ class Text:
         else:
             keito = '\n'.join(keitoList)
             return f'{self.bus[bus_id]}\n{keito}'
-
-    def gpt(self, text):
-        return prompt(text)[2:]
-
 
 class User:
     def __init__(self):
@@ -77,19 +69,6 @@ textClass = Text()
 # 各バス停のバス停番号を辞書方で保存したもの
 with open('station.pkl', 'rb') as f:
     stationDict = pickle.load(f)
-
-# ChatGPTで自動生成した文章を返す
-def prompt(prompt):
-    response = openai.Completion.create(
-        engine="text-davinci-003",
-        prompt=prompt,
-        temperature=0.9,
-        max_tokens=300,
-        top_p=1,
-        frequency_penalty=0,
-        presence_penalty=0.6,
-    )
-    return response.choices[0].text
 
 #Webhookからのリクエストをチェック
 @app.route("/callback", methods=['POST'])
@@ -163,16 +142,10 @@ def handle_message(event):
         # バス停名が見つからない場合は、近そうなものを探す（上限5個）
         candidates = candidate_names(text)
         # 一致するものがない場合
-        # NEW! ChatGPTで自動生成した文章を返す
         if len(candidates) == 0:
-            # line_bot_api.reply_message(
-                # event.reply_token,
-                # TextSendMessage(text='そんなバス停ないで')
-            # )
-            text = textClass.gpt(text)
             line_bot_api.reply_message(
                 event.reply_token,
-                TextSendMessage(text=text)
+                TextSendMessage(text='そんなバス停ないで')
             )
             return
         elif len(candidates) == 1:
