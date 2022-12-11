@@ -16,23 +16,27 @@ import time
 import re
 import pickle
 
+import openai
+
 app = Flask(__name__)
 
 #環境変数取得
 # LINE Developersで設定されているアクセストークンとChannel Secretを取得し、設定します。
 YOUR_CHANNEL_ACCESS_TOKEN = os.environ["YOUR_CHANNEL_ACCESS_TOKEN"]
 YOUR_CHANNEL_SECRET = os.environ["YOUR_CHANNEL_SECRET"]
+OPENAPI_API_KEY = os.environ["OPENAPI_API_KEY"]
 
 line_bot_api = LineBotApi(YOUR_CHANNEL_ACCESS_TOKEN)
 handler = WebhookHandler(YOUR_CHANNEL_SECRET)
+openai.api_key = OPENAPI_API_KEY
 
 class Text:
     def __init__(self):
         self.error = {'url': 'URL間違ってるで。\nポケロケのサイトから目的のバス停のバス接近情報を表示するURLを入力してや。\n乗りたいバス停の名前を入力してな。\nその後表示されるURLから、乗りたいバスを選んで、「決定」→「設定バス接近情報を見る」と進んだ後の画面のURLを入力してくれ。',\
             'no_url': 'URLが設定されてないで。\nポケロケのサイトから目的のバス停のバス接近情報を表示するURLを入力してや。\n乗りたいバス停の名前を入力してな。\nその後表示されるURLから、乗りたいバスを選んで、「決定」→「設定バス接近情報を見る」と進んだ後の画面のURLを入力してくれ。',\
-            'starting': '既に起動中やで。他の設定にしたかったら、「終了」と入力してからまた新しく登録し直してくれや。'}
-        self.start = '一番近いバスの接近状況を通知するで。\n10分経過で自動終了するしな。'
-        self.end = {'quit_flag': '終了するで。', 'time': '10分が経過したので終了するで。', 'arrive': 'バスが到着したから終了するな。'}
+            'starting': '既に起動中やで。他の設定にしたいんやったら、「終了」って入力してからまた新しく登録し直してくれや。'}
+        self.start = '一番近いバスの接近状況を通知するで。\n20分経過で自動終了するしな。'
+        self.end = {'quit_flag': '終了するで。ほな。', 'time': '20分が経過したから終了するで。バス遅いな。ごめんやで。', 'arrive': 'バスが到着したし終了するな。ほな。'}
         self.bus = {1: '1駅前を以下のバスが通過したで。\nもうすぐ到着するで。\n急いでや。', 2: '2駅前を以下のバスが通過したで。', 3: '3駅前を以下のバスが通過したで。', 4: '近くにまだバスおらんで。', 'arrive': 'バスが到着したわ。\nちゃんと乗れたか？'}
         self.follow = '友達追加ありがとう！\n乗りたいバス停の名前を入力してな。\nその後表示されるURLから、乗りたいバスを選んで、「決定」→「設定バス接近情報を見る」と進んだ後の画面のURLを入力してくれ。\n一番近いバスが何駅前におるか教えたるで。'
     
@@ -43,6 +47,9 @@ class Text:
         else:
             keito = '\n'.join(keitoList)
             return f'{self.bus[bus_id]}\n{keito}'
+
+    def gpt(self, text):
+        return prompt(text)[2:]
 
 
 class User:
@@ -70,6 +77,19 @@ textClass = Text()
 # 各バス停のバス停番号を辞書方で保存したもの
 with open('station.pkl', 'rb') as f:
     stationDict = pickle.load(f)
+
+# ChatGPTで自動生成した文章を返す
+def prompt(prompt):
+    response = openai.Completion.create(
+        engine="text-davinci-003",
+        prompt=prompt,
+        temperature=0.9,
+        max_tokens=300,
+        top_p=1,
+        frequency_penalty=0,
+        presence_penalty=0.6,
+    )
+    return response.choices[0].text
 
 #Webhookからのリクエストをチェック
 @app.route("/callback", methods=['POST'])
@@ -143,10 +163,16 @@ def handle_message(event):
         # バス停名が見つからない場合は、近そうなものを探す（上限5個）
         candidates = candidate_names(text)
         # 一致するものがない場合
+        # NEW! ChatGPTで自動生成した文章を返す
         if len(candidates) == 0:
+            # line_bot_api.reply_message(
+                # event.reply_token,
+                # TextSendMessage(text='そんなバス停ないで')
+            # )
+            text = textClass.gpt(text)
             line_bot_api.reply_message(
                 event.reply_token,
-                TextSendMessage(text='そんなバス停ないで')
+                TextSendMessage(text=text)
             )
             return
         elif len(candidates) == 1:
@@ -192,8 +218,8 @@ def handle_message(event):
     # バスが来たかどうかのフラグ
     arrive_flag = False
 
-    # 10分間
-    while now - start_time < 600:
+    # 20分間
+    while now - start_time < 1200:
         # ユーザークラスから、各ユーザーのフラグを取得
         try:
             quit_flag = userClass.quit_flags[event.source.user_id]
