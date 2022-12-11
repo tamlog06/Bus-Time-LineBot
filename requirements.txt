@@ -5,3 +5,4 @@ requests==2.26.0
 minette==0.4.3
 Janome==0.4.0
 werkzeug>=0.15.4
+waitress==2.1.2

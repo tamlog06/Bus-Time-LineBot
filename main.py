@@ -325,5 +325,7 @@ def candidate_names(name):
 
 # ポート番号の設定
 if __name__ == "__main__":
+    from waitress import serve
     port = int(os.getenv("PORT", 5000))
-    app.run(host="0.0.0.0", port=port)
+    # app.run(host="0.0.0.0", port=port)
+    serve(app, host="0.0.0.0", port=port)
