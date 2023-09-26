@@ -30,6 +30,7 @@ class Text:
     def __init__(self):
         self.error = {'url': 'URL間違ってるで。\n以下のURLから操作方法を確認してな。\nhttps://github.com/tamlog06/Bus-Time-LineBot',\
             'no_url': 'URLが設定されてないで。\n以下のURLから操作方法を確認してな。\nhttps://github.com/tamlog06/Bus-Time-LineBot',\
+            'no_bus_stop': 'そんなバス停ないで。\n以下のURLから操作方法を確認してな。\nhttps://github.com/tamlog06/Bus-Time-LineBot',\
             'starting': '既に起動中やで。他の設定にしたいんやったら、「終了」って入力してからまた新しく登録し直してくれや。'}
         self.start = '一番近いバスの接近状況を通知するで。\n20分経過で自動終了するしな。'
         self.end = {'quit_flag': '終了するで。ほな。', 'time': '20分が経過したから終了するで。', 'arrive': 'バスが到着したし終了するな。'}
@@ -145,7 +146,7 @@ def handle_message(event):
         if len(candidates) == 0:
             line_bot_api.reply_message(
                 event.reply_token,
-                TextSendMessage(text='そんなバス停ないで')
+                TextSendMessage(text=textClass.error['no_bus_stop'])
             )
             return
         elif len(candidates) == 1:
