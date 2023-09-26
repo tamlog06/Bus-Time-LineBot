@@ -28,13 +28,13 @@ handler = WebhookHandler(YOUR_CHANNEL_SECRET)
 
 class Text:
     def __init__(self):
-        self.error = {'url': 'URL間違ってるで。\nポケロケのサイトから目的のバス停のバス接近情報を表示するURLを入力してや。\n乗りたいバス停の名前を入力してな。\nその後表示されるURLから、乗りたいバスを選んで、「決定」→「設定バス接近情報を見る」と進んだ後の画面のURLを入力してくれ。',\
-            'no_url': 'URLが設定されてないで。\nポケロケのサイトから目的のバス停のバス接近情報を表示するURLを入力してや。\n乗りたいバス停の名前を入力してな。\nその後表示されるURLから、乗りたいバスを選んで、「決定」→「設定バス接近情報を見る」と進んだ後の画面のURLを入力してくれ。',\
+        self.error = {'url': 'URL間違ってるで。\n以下のURLから操作方法を確認してな。\nhttps://github.com/tamlog06/Bus-Time-LineBot',\
+            'no_url': 'URLが設定されてないで。\n以下のURLから操作方法を確認してな。\nhttps://github.com/tamlog06/Bus-Time-LineBot',\
             'starting': '既に起動中やで。他の設定にしたいんやったら、「終了」って入力してからまた新しく登録し直してくれや。'}
         self.start = '一番近いバスの接近状況を通知するで。\n20分経過で自動終了するしな。'
-        self.end = {'quit_flag': '終了するで。ほな。', 'time': '20分が経過したから終了するで。バス遅いな。ごめんやで。', 'arrive': 'バスが到着したし終了するな。ほな。'}
+        self.end = {'quit_flag': '終了するで。ほな。', 'time': '20分が経過したから終了するで。', 'arrive': 'バスが到着したし終了するな。'}
         self.bus = {1: '1駅前を以下のバスが通過したで。\nもうすぐ到着するで。\n急いでや。', 2: '2駅前を以下のバスが通過したで。', 3: '3駅前を以下のバスが通過したで。', 4: '近くにまだバスおらんで。', 'arrive': 'バスが到着したわ。\nちゃんと乗れたか？'}
-        self.follow = '友達追加ありがとう！\n乗りたいバス停の名前を入力してな。\nその後表示されるURLから、乗りたいバスを選んで、「決定」→「設定バス接近情報を見る」と進んだ後の画面のURLを入力してくれ。\n一番近いバスが何駅前におるか教えたるで。'
+        self.follow = '友達追加ありがとう！\n以下のURLから操作方法を確認してな。\nhttps://github.com/tamlog06/Bus-Time-LineBot'
     
     def return_bus_text(self, bus_id, keitoList):
         assert type(bus_id) == int
